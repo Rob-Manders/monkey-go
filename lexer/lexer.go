@@ -1,6 +1,8 @@
 package lexer
 
-import "monkey/token"
+import (
+	"monkey/token"
+)
 
 type Lexer struct {
 	input        string
@@ -23,9 +25,35 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.character {
 	case '=':
-		nextToken = newToken(token.ASSIGN, l.character)
+		if l.peekChar() == '=' {
+			character := l.character
+			l.readCharacter()
+			literal := string(character) + string(l.character)
+			nextToken = token.Token{Type: token.EQ, Literal: literal}
+		} else {
+			nextToken = newToken(token.ASSIGN, l.character)
+		}
+	case '!':
+		if l.peekChar() == '=' {
+			character := l.character
+			l.readCharacter()
+			literal := string(character) + string(l.character)
+			nextToken = token.Token{Type: token.NOT_EQ, Literal: literal}
+		} else {
+			nextToken = newToken(token.BANG, l.character)
+		}
 	case '+':
 		nextToken = newToken(token.PLUS, l.character)
+	case '-':
+		nextToken = newToken(token.MINUS, l.character)
+	case '/':
+		nextToken = newToken(token.SLASH, l.character)
+	case '*':
+		nextToken = newToken(token.ASTERISK, l.character)
+	case '<':
+		nextToken = newToken(token.LT, l.character)
+	case '>':
+		nextToken = newToken(token.GT, l.character)
 	case ',':
 		nextToken = newToken(token.COMMA, l.character)
 	case ';':
@@ -82,6 +110,14 @@ func (l *Lexer) readIdentifier() string {
 	}
 
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
+	}
 }
 
 func (l *Lexer) readNumber() string {
